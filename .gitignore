@@ -1,0 +1,5 @@
+bin
+obj
+.svn
+glob:AnthemNxt.suo
+*.user
