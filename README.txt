@@ -1,9 +1,11 @@
 ANTHEMNXT RELEASE NOTES
 =======================
 
-** 1.5.2 ** 
+** 1.6.1 **
 
-Last release that is fully compatible with Anthem.NET. From here on in we will be not necessarily providing 100% compatibility with Anthem aware controls in the hope of modernising the JS used (as well as adding JQuery as a dependency). If you just want a version of Anthem.NET with some of the bugs fixed then use this download
+- Added "source" html element as a parameter to the postcallback event
+- Added "xhr" as a parameter to the postcallback event, principally so that a host app can refire the more standard jquery $().ajaxComplete event if required.
+
 
 ** 1.6.0 **
 
@@ -15,3 +17,7 @@ Last release that is fully compatible with Anthem.NET. From here on in we will b
 - Signed the assemblies for use in trusted environments.
 - Removed clearing of __EVENTTARGET & __EVENTARGUMENT after a callback - prevents being able to do another callback inside of one of the pre/post handlers.
 - Converted anthem_precallback and anthem_postcallback to be JQuery "events" on $(document). Allows >1 subscriber, reduces code complexity. Also adding 'target' as a parameter to anthem_precallback so that we can which object caused the callback. We lose the ability to cancel the callback from those global events.
+
+** 1.5.2 ** 
+
+Last release that is fully compatible with Anthem.NET. From here on in we will be not necessarily providing 100% compatibility with Anthem aware controls in the hope of modernising the JS used (as well as adding JQuery as a dependency). If you just want a version of Anthem.NET with some of the bugs fixed then use this download

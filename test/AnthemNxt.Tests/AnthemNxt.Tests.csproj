@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D1C34A8E-827D-4E4C-A35E-CCEFA2539538}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AnthemNxt.Core.Tests</RootNamespace>
+    <AssemblyName>AnthemNxt.Tests</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UseIISExpress>false</UseIISExpress>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Web.Extensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.Web.Mobile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="accept.png" />
+    <Content Include="ButtonsAndLabels.aspx" />
+    <Content Include="button_run-down.gif" />
+    <Content Include="button_run.gif" />
+    <Content Include="Calendar.aspx" />
+    <Content Include="CheckBox.aspx" />
+    <Content Include="colorcode.css" />
+    <Content Include="ConcurrentCallBacks.aspx" />
+    <Content Include="Configuration.aspx" />
+    <Content Include="Core.aspx" />
+    <Content Include="DataBindDuringCallBack.aspx" />
+    <Content Include="DataGrid.aspx" />
+    <Content Include="DataList.aspx" />
+    <Content Include="DataList2.aspx" />
+    <Content Include="default.aspx" />
+    <Content Include="DropDownLists.aspx" />
+    <Content Include="DropDownListsPrePost.aspx" />
+    <Content Include="DynamicAnthemControls.aspx" />
+    <Content Include="DynamicUserControls.aspx" />
+    <Content Include="error.aspx" />
+    <Content Include="FileDownload.aspx" />
+    <Content Include="FileUpload.aspx" />
+    <Content Include="Global.asax" />
+    <Content Include="GridView.aspx" />
+    <Content Include="HiddenField.aspx" />
+    <Content Include="HyperLink.aspx" />
+    <Content Include="Image.aspx" />
+    <Content Include="ImageButtons.aspx" />
+    <Content Include="InvokeClientSideFunctionAfterCallBack.aspx" />
+    <Content Include="InvokeCustomControl.aspx" />
+    <Content Include="InvokeCustomControlMethod.aspx" />
+    <Content Include="InvokeMasterPageMethod.aspx" />
+    <Content Include="InvokePageMethod.aspx" />
+    <Content Include="InvokeUserControlMethod.aspx" />
+    <Content Include="jquery-1.4.2.js" />
+    <Content Include="LinkButtons.aspx" />
+    <Content Include="ListBox.aspx" />
+    <Content Include="MemoryLeaks.aspx" />
+    <Content Include="MemoryLeaksWithUpdates.aspx" />
+    <Content Include="MissingControl.aspx" />
+    <Content Include="MissingMethod.aspx" />
+    <Content Include="MoreButtonProperties.aspx" />
+    <Content Include="MultiView.aspx" />
+    <Content Include="Overview.aspx" />
+    <Content Include="PageScripts.aspx" />
+    <Content Include="PanelsAndVisibility.aspx" />
+    <Content Include="PreAndPostCallBackFunctions.aspx" />
+    <Content Include="PreUpdate.aspx" />
+    <Content Include="RadioButtonList.aspx" />
+    <Content Include="RedirectingClients.aspx" />
+    <Content Include="RedirectingClientsOnErrors.aspx" />
+    <Content Include="Repeater.aspx" />
+    <Content Include="RepeatersAndViewState.aspx" />
+    <Content Include="ResponseEncoding.aspx" />
+    <Content Include="ReturningDataSets.aspx" />
+    <Content Include="ServerTransferDestination.aspx" />
+    <Content Include="ServerTransferExample.aspx" />
+    <Content Include="Table.aspx" />
+    <Content Include="targetpage.aspx" />
+    <Content Include="TextBox.aspx" />
+    <Content Include="Timer.aspx" />
+    <Content Include="tiny_red.gif" />
+    <Content Include="UnhandledExceptions.aspx" />
+    <Content Include="UpdatePanel.aspx" />
+    <Content Include="UserControl.ascx" />
+    <Content Include="UserControlWithCheckBox.ascx" />
+    <Content Include="Validation.ascx" />
+    <Content Include="Validation.aspx" />
+    <Content Include="ValidationGroups.aspx" />
+    <Content Include="ValidationNoClientScript.aspx" />
+    <Content Include="ViewSource.aspx" />
+    <Content Include="Web.config" />
+    <Content Include="WebParts.aspx" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="error.aspx.cs">
+      <DependentUpon>error.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="error.aspx.designer.cs">
+      <DependentUpon>error.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="targetpage.aspx.cs">
+      <DependentUpon>targetpage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="targetpage.aspx.designer.cs">
+      <DependentUpon>targetpage.aspx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AnthemNxt.Controls\AnthemNxt.Controls.csproj">
+      <Project>{F56A2635-FC49-4AB8-A568-6F4EBEE17DAC}</Project>
+      <Name>AnthemNxt.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\AnthemNxt.Core\AnthemNxt.Core.csproj">
+      <Project>{1426E0BD-780A-401E-8FD2-46E6D5FB673E}</Project>
+      <Name>AnthemNxt.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Web.sitemap" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MasterPage.master" />
+    <Content Include="Sample.master" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>51440</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost/AnthemNxt.Tests</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
