@@ -36,32 +36,9 @@ function Anthem_AddEvent(control, eventType, functionPrefix) {
     eval("control." + eventType + " = func;");
 }
 
-function Anthem_GetXMLHttpRequest() {
-	if (window.XMLHttpRequest) {
-		return new XMLHttpRequest();
-	} else {
-		if (window.Anthem_XMLHttpRequestProgID) {
-			return new ActiveXObject(window.Anthem_XMLHttpRequestProgID);
-		} else {
-			var progIDs = ["Msxml2.XMLHTTP.6.0", "Msxml2.XMLHTTP.5.0", "Msxml2.XMLHTTP.4.0", "MSXML2.XMLHTTP.3.0", "MSXML2.XMLHTTP", "Microsoft.XMLHTTP"];
-			for (var i = 0; i < progIDs.length; ++i) {
-				var progID = progIDs[i];
-				try {
-					var x = new ActiveXObject(progID);
-					window.Anthem_XMLHttpRequestProgID = progID;
-					return x;
-				} catch (e) {
-				}
-			}
-		}
-	}
-	return null;
-}
-
 // Returns the form that is posted back using AJAX
 function Anthem_GetForm() {
-    var form = document.getElementById(Anthem_FormID);
-    return form;
+    return $('#' + Anthem_FormID)[0];
 }
 
 // Returns the URL for callbacks
@@ -71,42 +48,84 @@ function Anthem_GetCallBackUrl() {
     return action;
 }
 
-function Anthem_CallBack(source, url, target, id, method, args, clientCallBack, clientCallBackArg, includeControlValuesWithCallBack, updatePageAfterCallBack) {
+function Anthem_Fire(control, e, eventTarget, eventArgument, 
+    causesValidation, validationGroup, imageUrlDuringCallBack, textDuringCallBack, enabledDuringCallBack,
+	preCallBackFunction, postCallBackFunction, callBackCancelledFunction, includeControls, updatePage
+) {
+    // Cancel the callback if the control is disabled. Although most controls will not raise their callback event if they are disabled, the LinkButton will
+    if (control.disabled) return;
 
-    // Preserve __EVENTTARGET & __EVENTARGUMENT so that callbacks can be made from inside 'precallback'
-    var etarget = $('#__EVENTTARGET').val();
-    var eargs = $('#__EVENTARGUMENT').val();
-    $(anthemnxt).trigger('precallback', [source]);
-    $('#__EVENTTARGET').val(etarget);
-    $('#__EVENTARGUMENT').val(eargs);
+    var preProcessOut = new Anthem_PreProcessCallBackOut();
+    var preProcessResult = Anthem_PreProcessCallBack(control,
+	    e, eventTarget,
+	    causesValidation, validationGroup,
+	    imageUrlDuringCallBack, textDuringCallBack, enabledDuringCallBack,
+	    preCallBackFunction, callBackCancelledFunction,
+	    preProcessOut
+	);
 
-    var encodedData = "";
-    if (target == "Page") {
-        encodedData += "&Anthem_PageMethod=" + method;
-    } else if (target == "MasterPage") {
-        encodedData += "&Anthem_MasterPageMethod=" + method;
-    } else if (target == "Control") {
-        encodedData += "&Anthem_ControlID=" + id.split(":").join("_");
-        encodedData += "&Anthem_ControlMethod=" + method;
+    if (preProcessResult) {
+        var eventType = e.type;
+
+        Anthem_FireEvent(
+            control, eventTarget, eventArgument,
+		    function (result) {
+		        Anthem_PostProcessCallBack(
+                    result, control,
+                    eventType, eventTarget,
+                    null, null,
+                    imageUrlDuringCallBack, textDuringCallBack, postCallBackFunction,
+                    preProcessOut
+                );
+		    },
+		    null,
+		    includeControls,
+		    updatePage
+	    );
     }
+}
+
+function Anthem_FireEvent(source, eventTarget, eventArgument, clientCallBack, clientCallBackArg, includeControls, updatePage) {
+    var form = Anthem_GetForm();
+    Anthem_SetHiddenInputValue(form, "__EVENTTARGET", eventTarget);
+    Anthem_SetHiddenInputValue(form, "__EVENTARGUMENT", eventArgument);
+    Anthem_CallBack(source, null, null, null, null, clientCallBack, clientCallBackArg, includeControls, updatePage);
+}
+
+function Anthem_CallBack(source, target, id, method, args, clientCallBack, clientCallBackArg, includeControls, updatePage) {
+    // Preserve __EVENTTARGET & __EVENTARGUMENT so that callbacks can be made from inside 'precallback'
+    var etarget = $('#__EVENTTARGET').val(); var eargs = $('#__EVENTARGUMENT').val();
+    $(anthemnxt).trigger('precallback', [source]);
+    $('#__EVENTTARGET').val(etarget); $('#__EVENTARGUMENT').val(eargs);
+
+    // Add "call" methods if they are provided
+    var data = "";
+    if (target == "Page") {
+        data += "&anthem_pagemethod=" + method;
+    } else if (target == "MasterPage") {
+        data += "&anthem_masterpagemethod=" + method;
+    } else if (target == "Control") {
+        data += "&anthem_controlid=" + id.split(":").join("_"); data += "&anthem_controlmethod=" + method;
+    }
+
+    // Add "call" arguments if there are any
 	if (args) {
 		for (var argsIndex = 0; argsIndex < args.length; ++argsIndex) {
 			if (args[argsIndex] instanceof Array) {
 				for (var i = 0; i < args[argsIndex].length; ++i) {
-					encodedData += "&Anthem_CallBackArgument" + argsIndex + "=" + Anthem_Encode(args[argsIndex][i]);
+					data += "&anthem_callbackargument" + argsIndex + "=" + Anthem_Encode(args[argsIndex][i]);
 				}
 			} else {
-				encodedData += "&Anthem_CallBackArgument" + argsIndex + "=" + Anthem_Encode(args[argsIndex]);
+				data += "&anthem_callbackargument" + argsIndex + "=" + Anthem_Encode(args[argsIndex]);
 			}
 		}
 	}
 	
-	if (updatePageAfterCallBack) {
-		encodedData += "&Anthem_UpdatePage=true";
-	}
+    // Add parameter to indicate the server side code needs to provide a page fragment update
+	if (updatePage) data += "&anthem_updatepage=true";
 	
-	// Scan the controls on the form and extract their values.
-	if (includeControlValuesWithCallBack) {
+	// Build 'data' containing all the control's values
+	if (includeControls) {
 		var form = Anthem_GetForm();
 		if (form != null) {
 			for (var elementIndex = 0; elementIndex < form.length; ++elementIndex) {
@@ -141,71 +160,39 @@ function Anthem_CallBack(source, url, target, id, method, args, clientCallBack, 
 					}
 					if (elementValue instanceof Array) {
 						for (var i = 0; i < elementValue.length; ++i) {
-							encodedData += "&" + element.name + "=" + Anthem_Encode(elementValue[i]);
+							data += "&" + element.name + "=" + Anthem_Encode(elementValue[i]);
 						}
 					} else if (elementValue != null) {
-						encodedData += "&" + element.name + "=" + Anthem_Encode(elementValue);
+						data += "&" + element.name + "=" + Anthem_Encode(elementValue);
 					}
 				}
 			}
 		}
 	}
-	
-	if (encodedData.length > 0) {
-	    encodedData = encodedData.substring(1);
-	}
+	if (data.length > 0) data = data.substring(1);
 
-    var x = Anthem_GetXMLHttpRequest();
-    var result = null;
-    if (!x) {
-	    result = { "value": null, "error": "NOXMLHTTP" };
-	    if (typeof(window.Anthem_Error) == "function") {
-		    Anthem_Error(result);
-	    }
-	    if (typeof(clientCallBack) == "function") {
-		    clientCallBack(result, clientCallBackArg);
-	    }
-	    return result;
-    }
-    var action = Anthem_GetCallBackUrl();
-    x.open("POST", url ? url : action, clientCallBack ? true : false);
-    x.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8");
-    if (typeof(clientCallBack) == "function") {
-	    x.onreadystatechange = function() {
-		    if (x.readyState != 4) {
-			    return;
-		    }
-		    result = Anthem_GetResult(x);
-		    if (result.error) {
-			    if (typeof(window.Anthem_Error) == "function") {
-				    Anthem_Error(result);
-			    }
-		    }
-		    if (updatePageAfterCallBack) {
-			    Anthem_UpdatePage(result);
-		    }
-		    Anthem_EvalClientSideScript(result);
-		    clientCallBack(result, clientCallBackArg);
+    var result = $.ajax({ 
+        async: clientCallBack ? true : false,
+        cache: false,
+        type: 'POST',
+        url: Anthem_GetCallBackUrl(),
+        data: data,
+        complete: function (x) {
+            result = Anthem_GetResult(x);
+            if (result.error) Anthem_Error(result);
+            if (updatePage) Anthem_UpdatePage(result);
+            Anthem_EvalClientSideScript(result);
+            clientCallBack(result, clientCallBackArg);
+            $(anthemnxt).trigger('postcallback', [source]);
+        }
+    });
 
-		    $(anthemnxt).trigger('postcallback', [source, x]);
-		    
-			x = null;
-	    }
-    }
-    x.send(encodedData);
-    if (typeof(clientCallBack) != "function") {
-	    result = Anthem_GetResult(x);
-	    if (result.error) {
-		    if (typeof(window.Anthem_Error) == "function") {
-			    Anthem_Error(result);
-		    }
-	    }
-	    if (updatePageAfterCallBack) {
-		    Anthem_UpdatePage(result);
-	    }
-	    Anthem_EvalClientSideScript(result);
-
-	    $(anthemnxt).trigger('postcallback', [source, x]);
+    if (!clientCallback) {
+        result = Anthem_GetResult(x);
+        if (result.error) Anthem_Error(result);
+        if (updatePage) Anthem_UpdatePage(result);
+        Anthem_EvalClientSideScript(result);
+        $(anthemnxt).trigger('postcallback', [source]);
     }
 
 	return result;
@@ -255,28 +242,11 @@ function Anthem_RemoveHiddenInput(form, name) {
     }
 }
 
-function Anthem_FireEvent(source, eventTarget, eventArgument, clientCallBack, clientCallBackArg, includeControlValuesWithCallBack, updatePageAfterCallBack) {
-	var form = Anthem_GetForm();
-	Anthem_SetHiddenInputValue(form, "__EVENTTARGET", eventTarget);
-	Anthem_SetHiddenInputValue(form, "__EVENTARGUMENT", eventArgument);
-	Anthem_CallBack(source, null, null, null, null, null, clientCallBack, clientCallBackArg, includeControlValuesWithCallBack, updatePageAfterCallBack);
-}
-
-function Anthem_GetViewstateFieldName() {
-	return "__VIEWSTATE";
-}
-
 function Anthem_UpdatePage(result) {
 	var form = Anthem_GetForm();
-	if (result.viewState) {
-		Anthem_SetHiddenInputValue(form, Anthem_GetViewstateFieldName(), result.viewState);
-	}
-	if (result.viewStateEncrypted) {
-		Anthem_SetHiddenInputValue(form, "__VIEWSTATEENCRYPTED", result.viewStateEncrypted);
-	}
-	if (result.eventValidation) {
-		Anthem_SetHiddenInputValue(form, "__EVENTVALIDATION", result.eventValidation);
-	}
+	if (result.viewState) Anthem_SetHiddenInputValue(form, "__VIEWSTATE", result.viewState);
+	if (result.viewStateEncrypted) Anthem_SetHiddenInputValue(form, "__VIEWSTATEENCRYPTED", result.viewStateEncrypted);
+	if (result.eventValidation) Anthem_SetHiddenInputValue(form, "__EVENTVALIDATION", result.eventValidation);
 	if (result.controls) {
 		for (var controlID in result.controls) {
 			var containerID = "Anthem_" + controlID.split("$").join("_") + "__";
@@ -291,9 +261,7 @@ function Anthem_UpdatePage(result) {
 			}
 		}
 	}
-	if (result.pagescript) {
-	    Anthem_LoadPageScript(result, 0);
-	}
+	if (result.pagescript) Anthem_LoadPageScript(result, 0);
 }
 
 // Load each script in order and wait for each one to load before proceeding
@@ -342,9 +310,7 @@ function Anthem_LoadPageScript(result, index) {
 		                }
 		            }
 		        }
-		        if (found) {
-		            head.removeChild(control);
-		        }
+		        if (found) head.removeChild(control);
                 
                 var scriptAddedToHead = false;
                 if (typeof script.readyState != "undefined" && !window.opera) {
@@ -358,9 +324,7 @@ function Anthem_LoadPageScript(result, index) {
                 } else {
                     if (isExternalScript) // if it's an external script, only execute the next script when the previous one is loaded.
                     {
-                    	script.onload = function() {
-                    		Anthem_LoadPageScript(result, index + 1);
-                    	};
+                    	script.onload = function() { Anthem_LoadPageScript(result, index + 1); };
                     }
                     else // I didn't find a way for script blocks to fire some onload event. So in this case directly call the Anthem_LoadPageScript for the next script.
                     {
@@ -373,8 +337,7 @@ function Anthem_LoadPageScript(result, index) {
                 // Now we append the new script and move on to the next script.
 		        // Note that this is a recursive function. It stops when the
 		        // index grows larger than the number of scripts.
-		        if (!scriptAddedToHead)
-                    document.getElementsByTagName('head')[0].appendChild(script);
+		        if (!scriptAddedToHead) document.getElementsByTagName('head')[0].appendChild(script);
 	        }
 		} catch (e) {
 		    throw e;
@@ -394,26 +357,29 @@ function Anthem_EvalClientSideScript(result) {
 	}
 }
 
-//Fix for bug #1429412, "Reponse callback returns previous response after file push".
-//see http://sourceforge.net/tracker/index.php?func=detail&aid=1429412&group_id=151897&atid=782464
 function Anthem_Clear__EVENTTARGET() {
-	var form = Anthem_GetForm();
+    var form = Anthem_GetForm(); // see http://sourceforge.net/tracker/index.php?func=detail&aid=1429412&group_id=151897&atid=782464
 	Anthem_SetHiddenInputValue(form, "__EVENTTARGET", "");
 }
 
 function Anthem_InvokePageMethod(methodName, args, clientCallBack, clientCallBackArg) {
-	Anthem_Clear__EVENTTARGET(); // fix for bug #1429412
-    return Anthem_CallBack(methodName, null, "Page", null, methodName, args, clientCallBack, clientCallBackArg, true, true);
+	Anthem_Clear__EVENTTARGET();
+    return Anthem_CallBack(methodName, "Page", null, methodName, args, clientCallBack, clientCallBackArg, true, true);
 }
 
 function Anthem_InvokeMasterPageMethod(methodName, args, clientCallBack, clientCallBackArg) {
-	Anthem_Clear__EVENTTARGET(); // fix for bug #1429412
-	return Anthem_CallBack(methodName, null, "MasterPage", null, methodName, args, clientCallBack, clientCallBackArg, true, true);
+	Anthem_Clear__EVENTTARGET();
+	return Anthem_CallBack(methodName, "MasterPage", null, methodName, args, clientCallBack, clientCallBackArg, true, true);
 }
 
 function Anthem_InvokeControlMethod(id, methodName, args, clientCallBack, clientCallBackArg) {
-	Anthem_Clear__EVENTTARGET(); // fix for bug #1429412
-	return Anthem_CallBack(methodName, null, "Control", id, methodName, args, clientCallBack, clientCallBackArg, true, true);
+	Anthem_Clear__EVENTTARGET();
+	return Anthem_CallBack(methodName, "Control", id, methodName, args, clientCallBack, clientCallBackArg, true, true);
+}
+
+function Anthem_PreProcessCallBackOut() {
+    this.ParentElement = null;
+    this.OriginalText = '';
 }
 
 function Anthem_PreProcessCallBack(
@@ -500,11 +466,6 @@ function Anthem_PreProcessCallBack(
     }
 }
 
-function Anthem_PreProcessCallBackOut() {
-    this.ParentElement = null;
-    this.OriginalText = '';
-}
-
 function Anthem_PostProcessCallBack(
     result, 
     control,
@@ -554,67 +515,6 @@ function Anthem_PostProcessCallBack(
 	}
 }
 
-function Anthem_Fire(
-	control,
-	e,
-	eventTarget,
-	eventArgument,
-	causesValidation,
-	validationGroup,
-	imageUrlDuringCallBack,
-	textDuringCallBack,
-	enabledDuringCallBack,
-	preCallBackFunction,
-	postCallBackFunction,
-	callBackCancelledFunction,
-	includeControlValuesWithCallBack,
-	updatePageAfterCallBack
-) {
-    // Cancel the callback if the control is disabled. Although most controls will
-    // not raise their callback event if they are disabled, the LinkButton will.
-    // This check is for the LinkButton. See SourceForge Patch 1639700.
-    if (control.disabled) return;
-	var preProcessOut = new Anthem_PreProcessCallBackOut();
-	var preProcessResult = Anthem_PreProcessCallBack(
-	    control, 
-	    e, 
-	    eventTarget,
-	    causesValidation, 
-	    validationGroup, 
-	    imageUrlDuringCallBack, 
-	    textDuringCallBack, 
-	    enabledDuringCallBack, 
-	    preCallBackFunction, 
-	    callBackCancelledFunction, 
-	    preProcessOut
-	);
-    if (preProcessResult) {
-        var eventType = e.type;
-        Anthem_FireEvent(
-            control,
-		    eventTarget,
-		    eventArgument,
-		    function(result) {
-                Anthem_PostProcessCallBack(
-                    result, 
-                    control, 
-                    eventType,
-                    eventTarget,
-                    null, 
-                    null, 
-                    imageUrlDuringCallBack, 
-                    textDuringCallBack, 
-                    postCallBackFunction, 
-                    preProcessOut
-                );
-		    },
-		    null,
-		    includeControlValuesWithCallBack,
-		    updatePageAfterCallBack
-	    );
-    }
-}
-
 function AnthemListControl_OnClick(
     e,
 	causesValidation,
@@ -656,12 +556,8 @@ function GetControlLocation(control) {
     var parent;
     
     for (parent = control; parent; parent = parent.offsetParent) {
-        if (parent.offsetLeft) {
-            offsetX += parent.offsetLeft;
-        }
-        if (parent.offsetTop) {
-            offsetY += parent.offsetTop;
-        }
+        if (parent.offsetLeft) offsetX += parent.offsetLeft;
+        if (parent.offsetTop) offsetY += parent.offsetTop;
     }
     
     return { x: offsetX, y: offsetY };
