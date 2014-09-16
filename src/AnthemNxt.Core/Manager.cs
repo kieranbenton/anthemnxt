@@ -239,7 +239,7 @@ var Anthem_FormID = """ + form.ClientID + @""";
 				res.StatusCode = 200;
 
 				var sb = new StringBuilder();
-				ScriptManager.AddScriptForClientSideEval("window.location='" + href + "';");
+				ScriptManager.AddScriptForClientSideEval("try{window.location='" + href + "';}catch(e){}");
 				JsonWriter.WriteValueAndError(sb, null, null, null, null, null, null, null, clientSideEvalScripts);
 				res.Write(sb.ToString());
 				res.End();
